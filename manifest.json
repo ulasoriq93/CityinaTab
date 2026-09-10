@@ -1,0 +1,12 @@
+{
+  "name": "City in a Tab",
+  "short_name": "CityTab",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0d1220",
+  "theme_color": "#121828",
+  "description": "Offline pixel-art idle city builder.",
+  "icons": [
+    {"src":"icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

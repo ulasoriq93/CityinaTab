@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#121828" />
+  <meta name="description" content="City in a Tab - an offline pixel-art idle city builder." />
+  <title>City in a Tab</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar pixel-panel">
+      <div class="brand-wrap">
+        <div class="brand-icon pixel-building"></div>
+        <div>
+          <h1>City in a Tab</h1>
+          <div id="citySubtitle" class="muted">Tiny settlement · Day 1</div>
+        </div>
+      </div>
+      <div class="top-metrics">
+        <div class="metric"><span class="ico coin"></span><b id="moneyValue">$0</b><small id="moneyRate">+$0/s</small></div>
+        <div id="populationMetric" class="metric growth-metric" tabindex="0"><span class="ico people"></span><b id="populationValue">0 / 0</b><small id="populationRate">+0/s</small></div>
+        <div class="metric"><span class="ico clock"><img src="assets/ui-icons/clock.svg" alt="" draggable="false"></span><b id="timeValue">08:00</b><small id="dayValue">Day 1</small></div>
+      </div>
+      <div class="header-actions">
+        <span id="simStatus" class="sim-status live">LIVE 1×</span><div class="speed-controls" aria-label="Game speed"><button id="speed1Btn" class="pixel-btn compact active">1×</button><button id="speed2Btn" class="pixel-btn compact">2×</button></div>
+        <button id="howToPlayBtn" class="pixel-btn compact">How to Play</button>
+        <button id="pauseBtn" class="pixel-btn compact">Pause</button>
+        <button id="settingsBtn" class="pixel-btn compact">Settings</button>
+      </div>
+    </header>
+
+    <main class="main-grid">
+      <aside class="left-column">
+        <section class="pixel-panel stats-panel">
+          <div class="section-title-row"><h2>City Pulse</h2><span id="stageBadge" class="badge">Settlement</span></div>
+          <div id="statsGrid" class="stats-grid"></div>
+          <div class="progression-wrap">
+            <div class="label-row"><span>Growth Stage</span><span id="stageProgressText">0 / 1,000</span></div>
+            <div class="pixel-progress"><div id="stageProgressBar"></div></div>
+            <div class="next-unlock-row"><span id="nextUnlockLabel">Next Unlock</span><b id="nextUnlockText">—</b></div>
+          </div>
+        </section>
+
+        <section class="pixel-panel build-panel">
+          <div class="section-title-row"><h2>Build</h2><span id="buildHint" class="muted">Click a tile after choosing</span></div>
+          <div id="buildTabs" class="tabs"></div>
+          <div id="buildList" class="build-list"></div>
+        </section>
+      </aside>
+
+      <section class="center-column">
+        <section class="pixel-panel map-panel">
+          <div class="map-toolbar">
+            <div>
+              <h2 id="cityNameLabel">New Pixelton</h2>
+              <div id="mapStatus" class="muted">Select a building, then place it on an empty tile.</div>
+            </div>
+            <div class="map-actions">
+              <button id="expandLandBtn" class="pixel-btn compact">Expand Land</button>
+              <button id="bulldozeBtn" class="pixel-btn compact danger">Bulldoze</button>
+              <button id="centerMapBtn" class="pixel-btn compact">Center</button>
+            </div>
+          </div>
+          <div id="cityMap" class="city-map" aria-label="City map"></div>
+          <div class="map-legend"><span><i class="legend-dot road"></i>Road</span><span><i class="legend-dot residential"></i>Residential</span><span><i class="legend-dot commercial"></i>Commercial</span><span><i class="legend-dot industrial"></i>Industrial</span><span><i class="legend-dot green"></i>Green</span><span><i class="legend-dot civic"></i>Civic</span></div>
+        </section>
+
+        <section class="pixel-panel decision-panel" id="decisionPanel">
+          <div class="section-title-row"><div><h2>Mayor's Desk</h2><span id="decisionKind" class="decision-kind">Policy Decision</span></div><span id="decisionTimer" class="muted">Next brief soon</span></div>
+          <div id="decisionCard" class="decision-card empty-card">
+            <div class="empty-pixel skyline"></div>
+            <h3>No urgent decision</h3>
+            <p>Your staff will bring policy choices as the city evolves.</p>
+          </div>
+        </section>
+      </section>
+
+      <aside class="right-column">
+        <section class="pixel-panel tabs-panel">
+          <div class="tabs right-tabs" id="infoTabs">
+            <button data-tab="news" class="tab-btn active">News</button>
+            <button data-tab="traits" class="tab-btn">Traits</button>
+            <button data-tab="achievements" class="tab-btn">Awards</button>
+            <button data-tab="history" class="tab-btn">History</button>
+          </div>
+          <div id="tabContent" class="tab-content"></div>
+        </section>
+
+        <section class="pixel-panel projects-panel">
+          <div class="section-title-row"><h2>Mega Projects</h2><span class="muted">City-defining investments</span></div>
+          <div id="projectList" class="project-list"></div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+  <div id="modalRoot" class="modal-root hidden"></div>
+
+  <script src="data/buildings.js"></script>
+  <script src="data/events.js"></script>
+  <script src="data/decisions.js"></script>
+  <script src="data/traits.js"></script>
+  <script src="data/achievements.js"></script>
+  <script src="data/projects.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/sprites.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
