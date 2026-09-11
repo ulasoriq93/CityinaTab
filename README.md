@@ -1,4 +1,4 @@
-# City in a Tab — V1.5.2
+# City in a Tab — V1.5.3
 
 Hotfix release for V1.5.
 
@@ -84,6 +84,6 @@ Upload the project contents to a repository and enable GitHub Pages for the bran
 - Land expansion extended to 40×40.
 - Visible app version badge.
 
-## V1.5.2
+## V1.5.3
 - Community School, Recycling Center, Cinema, Fire Station, Transit Hub, and Grand Hotel now use the exact same static pixel SVG on the city map as in the Build menu.
 - No gameplay/save-format changes; V1.5/V1.5.1 saves remain compatible.

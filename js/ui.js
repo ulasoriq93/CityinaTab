@@ -56,7 +56,7 @@ window.UI = {
     document.getElementById('moneyValue').textContent='$'+this.fmt(s.money);
     document.getElementById('moneyRate').textContent=(r.net>=0?'+':'')+'$'+r.net.toFixed(1)+'/s';
     document.getElementById('populationValue').textContent=`${this.fmt(s.population)} / ${this.fmt(r.popCap)}`;
-    document.getElementById('populationRate').textContent=(r.popGrowth>=0?'+':'')+r.popGrowth.toFixed(2)+'/s';
+    const popPerDay=r.popGrowth*360; document.getElementById('populationRate').textContent=(popPerDay>=0?'+':'')+Math.round(popPerDay).toLocaleString(I18N.lang()==='tr'?'tr-TR':'en-US')+(I18N.lang()==='tr'?'/gün':'/day');
     const popMetric=document.getElementById('populationMetric'); if(popMetric){const tip=this.populationGrowthTip(s,r);popMetric.dataset.growthTip=tip;popMetric.setAttribute('aria-label',tip);}
     const h=Math.floor(s.minutes/60),m=Math.floor(s.minutes%60);document.getElementById('timeValue').textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;document.getElementById('dayValue').textContent=this.t('day',{n:s.day});
     document.getElementById('citySubtitle').textContent=`${I18N.stage(stage.name)} · ${this.t('day',{n:s.day})}`; document.getElementById('stageBadge').textContent=I18N.stage(stage.name);
@@ -71,7 +71,8 @@ window.UI = {
   },
   populationGrowthTip(s,r){
     const g=r.growth||Sim.growthBreakdown(s,r.popCap,r.net), tr=I18N.lang()==='tr';
-    const signed=(v)=>`${v>=0?'+':''}${v.toFixed(2)}/s`;
+    const dayUnit=tr?'/gün':'/day';
+    const signed=(v)=>`${v>=0?'+':''}${(v*360).toFixed(1)}${dayUnit}`;
     const stageName=I18N.stage(g.stageName||Game.stageFor(s).name);
     const lines=[
       tr?'NÜFUS ARTIŞI':'POPULATION GROWTH',
@@ -85,7 +86,7 @@ window.UI = {
     if(Math.abs(g.capacityImpact)>0.0005) lines.push(`${tr?'Kapasite aşımı':'Over capacity'}: ${signed(g.capacityImpact)}`);
     else lines.push(`${tr?'Kapasite':'Capacity'}: ${this.fmt(s.population)} / ${this.fmt(r.popCap)} · ${tr?'ceza yok':'no penalty'}`);
     lines.push(`${tr?'Net':'Net'}: ${signed(r.popGrowth)}`);
-    lines.push(tr?'Not: Konut kapasite sağlar; güçlü ekonomi ve iyi yaşam koşulları göçü hızlandırır.':'Note: Housing provides capacity; a strong economy and good living conditions accelerate migration.');
+    lines.push(tr?'Not: Değerler oyun günü başınadır. Konut kapasite sağlar; güçlü ekonomi ve iyi yaşam koşulları göçü hızlandırır.':'Note: Values are per in-game day. Housing provides capacity; a strong economy and good living conditions accelerate migration.');
     return lines.join('\n');
   },
 

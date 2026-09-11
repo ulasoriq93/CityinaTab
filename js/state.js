@@ -1,6 +1,6 @@
 window.Game = window.Game || {};
-Game.VERSION = 12;
-Game.APP_VERSION = '1.5.2';
+Game.VERSION = 13;
+Game.APP_VERSION = '1.5.3';
 Game.STAGES = [
   {name:'Settlement',pop:0,next:1000},{name:'Town',pop:1000,next:5000},{name:'Small City',pop:5000,next:15000},
   {name:'Regional City',pop:15000,next:50000},{name:'Metropolis',pop:50000,next:150000},{name:'Megacity',pop:150000,next:Infinity}

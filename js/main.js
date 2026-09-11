@@ -21,14 +21,37 @@
     Game.state.decisionUnlockQueue=(Game.state.decisionUnlockQueue||[]).filter(id=>!Game.state.decisionGrandfathered.includes(id));
     Game.state.nextDecisionAt=null;Game.state.version=12;
   }
+  Game.state.version=Game.VERSION;
   if(!Game.state.settings)Game.state.settings={sound:false,reducedMotion:false,mapView:'normal'}; if(!Game.state.settings.mapView)Game.state.settings.mapView='normal'; if(!Game.state.settings.language)Game.state.settings.language=localStorage.getItem('cityInATabLang')||'en'; localStorage.setItem('cityInATabLang',Game.state.settings.language); MapSystem.ensureMinimumSize(16); Sim.ensureStatLayers(Game.state,{repairLegacyGhosts:!!loaded&&upgradingV132});
   document.getElementById('cityNameLabel').textContent=Game.state.cityName;
   UI.init(); MapSystem.render(); window.addEventListener('resize',()=>{if(Game.state.settings?.mapView==='fit')MapSystem.applyViewMode();});
   const away=Math.max(0,(Date.now()-(Game.state.lastTick||Date.now()))/1000); if(loaded&&away>15){const report=Sim.offline(Game.state,away);MapSystem.expandIfNeeded();MapSystem.render();UI.refreshAll();setTimeout(()=>UI.showOffline(report),150)}
   Game.state.lastTick=Date.now();
-  let prev=performance.now(), uiTimer=0;
-  function loop(now){const dt=Math.min(2,(now-prev)/1000);prev=now;Sim.tick(Game.state,dt);Game.state.lastTick=Date.now();uiTimer+=dt;if(uiTimer>.5){MapSystem.expandIfNeeded();UI.refreshAll();uiTimer=0}requestAnimationFrame(loop)} requestAnimationFrame(loop);
-  setInterval(()=>StorageSystem.save(Game.state),10000);
-  window.addEventListener('beforeunload',()=>{Game.state.lastTick=Date.now();StorageSystem.save(Game.state)});
+  let uiTimer=0;
+  function advanceToNow(){
+    const now=Date.now(), last=Game.state.lastTick||now;
+    const elapsed=Math.max(0,(now-last)/1000);
+    if(elapsed<=0)return 0;
+    if(!Game.state.paused){
+      if(elapsed>2) Sim.offline(Game.state,elapsed);
+      else Sim.tick(Game.state,elapsed);
+    }
+    Game.state.lastTick=now;
+    return elapsed;
+  }
+  function loop(){
+    const dt=advanceToNow();
+    uiTimer+=Math.min(dt,.5);
+    if(uiTimer>=.5){MapSystem.expandIfNeeded();UI.refreshAll();uiTimer=0}
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+  document.addEventListener('visibilitychange',()=>{
+    advanceToNow();
+    if(document.visibilityState==='hidden') StorageSystem.save(Game.state);
+    else {MapSystem.expandIfNeeded();MapSystem.render();UI.refreshAll();}
+  });
+  setInterval(()=>{advanceToNow();StorageSystem.save(Game.state)},10000);
+  window.addEventListener('beforeunload',()=>{advanceToNow();StorageSystem.save(Game.state)});
   if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'}).then(r=>r.update()).catch(console.warn));
 })();
