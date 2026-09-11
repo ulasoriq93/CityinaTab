@@ -1,4 +1,4 @@
-const CACHE='city-in-a-tab-v1.5.1';
+const CACHE='city-in-a-tab-v1.5.2';
 const CORE = [
   './','./index.html','./manifest.json','./css/styles.css','./assets/build-icons/house.svg',
   './assets/build-icons/apartments.svg',

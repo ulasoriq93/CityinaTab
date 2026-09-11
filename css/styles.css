@@ -250,3 +250,6 @@ body{font-size:13px}
 .city-grid{display:grid;grid-template-columns:repeat(var(--map-size),var(--tile));grid-template-rows:repeat(var(--map-size),var(--tile));gap:2px;width:max-content;height:max-content;margin:0 auto;position:relative}
 .city-map.fit-view{display:block;overflow:hidden;padding:0;position:relative}
 .city-map.fit-view .city-grid{margin:0}
+
+/* V1.5.2 — V1.5 buildings use the exact same static pixel assets in the build menu and on the map. */
+.map-static-build-icon{position:absolute;inset:2px;width:calc(100% - 4px);height:calc(100% - 4px);display:block;object-fit:fill;image-rendering:pixelated;pointer-events:none;user-select:none}
