@@ -13,5 +13,11 @@ window.BUILDINGS = [
 {id:'clinic',name:'Clinic',cat:'civic',cost:1800,pop:0,income:0,upkeep:18,happy:3,traffic:1,pollution:0,safety:4,unlock:1000,desc:'Basic city health services.'},
 {id:'police',name:'Police Station',cat:'civic',cost:2500,pop:0,income:0,upkeep:25,happy:1,traffic:1,pollution:0,safety:8,unlock:3000,desc:'Keeps crime under control.'},
 {id:'library',name:'Library',cat:'civic',cost:2200,pop:0,income:0,upkeep:16,happy:4,traffic:1,pollution:0,culture:6,unlock:3000,desc:'Knowledge and culture hub.'},
+{id:'school',name:'Community School',cat:'civic',cost:4500,pop:0,income:0,upkeep:30,happy:3,traffic:2,pollution:0,culture:4,safety:1,unlock:1500,desc:'Education capacity and neighborhood life.'},
+{id:'recycling',name:'Recycling Center',cat:'industrial',cost:6500,pop:0,income:55,upkeep:28,happy:1,traffic:3,pollution:-6,unlock:4000,desc:'Turns waste into cleaner growth.'},
+{id:'cinema',name:'Cinema',cat:'commercial',cost:9000,pop:0,income:140,upkeep:38,happy:5,traffic:5,pollution:1,culture:5,unlock:8000,desc:'A busy entertainment anchor.'},
+{id:'firestation',name:'Fire Station',cat:'civic',cost:11000,pop:0,income:0,upkeep:65,happy:2,traffic:1,pollution:0,safety:10,unlock:12000,desc:'Emergency coverage for a growing city.'},
+{id:'transitHub',name:'Transit Hub',cat:'infrastructure',cost:18000,pop:0,income:20,upkeep:80,happy:2,traffic:-8,pollution:-2,unlock:15000,desc:'Moves more people with fewer cars.'},
+{id:'hotel',name:'Grand Hotel',cat:'commercial',cost:22000,pop:0,income:320,upkeep:90,happy:2,traffic:7,pollution:1,reputation:4,unlock:25000,desc:'High-value tourism and business stays.'},
 {id:'road',name:'Road',cat:'infrastructure',cost:90,pop:0,income:0,upkeep:0,happy:0,traffic:-1,pollution:0,unlock:0,desc:'Connects the city visually.'}
 ];

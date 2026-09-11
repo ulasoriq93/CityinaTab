@@ -69,6 +69,11 @@ window.DECISIONS = [
 {id:'cars',title:'Congested Crossroads',text:'Traffic engineers offer two very different fixes.',minPop:7000,choices:[
  {label:'Widen roads',effects:{money:-1600,traffic:-7,pollution:4,happiness:-1},news:'Road widening project begins.'},
  {label:'Bus lanes',effects:{money:-2200,traffic:-4,pollution:-3,happiness:3,reputation:2},news:'Dedicated bus lanes open on main avenues.'}]},
+{id:'housingScale',title:'Housing at Scale',text:'Growth is accelerating. Planners want a clear housing strategy before the next wave arrives.',minPop:8000,choices:[
+ {label:'Fast-track new housing',effects:{money:-8000,population:300,happiness:-2,traffic:3},news:'City hall fast-tracks a new housing wave.'},
+ {label:'Build infrastructure first',effects:{money:-5000,traffic:-4,safety:2,reputation:1},news:'Infrastructure investment gets priority before more housing.'},
+ {label:'Keep growth controlled',effects:{happiness:3,culture:2,reputation:2},news:'City hall chooses slower, controlled growth.'}
+]},
 {id:'university',title:'A University Proposal',text:'Educators propose a public university campus.',minPop:10000,choices:[
  {label:'Fund it',effects:{money:-6500,culture:12,happiness:5,reputation:8,population:500},news:'City University welcomes its first students.'},
  {label:'Too expensive',effects:{money:500,happiness:-2,culture:-2},news:'University plan is postponed.'}]},

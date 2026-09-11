@@ -12,7 +12,9 @@ window.UI = {
     document.getElementById('howToPlayBtn').onclick=()=>this.openHowToPlay();
     document.getElementById('settingsBtn').onclick=()=>this.openSettings();
     document.getElementById('bulldozeBtn').onclick=()=>{Game.state.bulldoze=!Game.state.bulldoze;Game.state.selectedBuild=null;this.refreshAll()};
-    document.getElementById('centerMapBtn').onclick=()=>document.getElementById('cityMap').scrollTo({top:0,left:0,behavior:'smooth'});
+    document.getElementById('centerMapBtn').onclick=()=>MapSystem.centerView(true);
+    document.getElementById('fitCityBtn').onclick=()=>{Game.state.settings.mapView=(Game.state.settings.mapView==='fit'?'normal':'fit');MapSystem.applyViewMode();StorageSystem.save(Game.state);this.refreshAll();};
+    document.getElementById('saveCityImageBtn').onclick=()=>MapSystem.exportImage();
     document.getElementById('expandLandBtn').onclick=()=>this.confirmExpansion();
     document.querySelectorAll('#infoTabs .tab-btn').forEach(b=>b.onclick=()=>{this.activeTab=b.dataset.tab;this.applyStaticLanguage();this.renderTab()});
     this.applyStaticLanguage();
@@ -44,6 +46,9 @@ window.UI = {
     document.getElementById('settingsBtn').textContent=this.t('settings');
     document.getElementById('bulldozeBtn').textContent=this.t('bulldoze');
     document.getElementById('centerMapBtn').textContent=this.t('center');
+    document.getElementById('fitCityBtn').textContent=(Game.state.settings?.mapView==='fit'?this.t('normalZoom'):this.t('fitCity'));
+    document.getElementById('saveCityImageBtn').textContent=this.t('saveCityImage');
+    const vb=document.getElementById('versionBadge');if(vb)vb.textContent='v'+Game.APP_VERSION;
     document.querySelectorAll('#infoTabs .tab-btn').forEach(b=>{b.textContent=this.t({news:'news',traits:'traits',achievements:'awards',history:'history'}[b.dataset.tab]);b.classList.toggle('active',b.dataset.tab===this.activeTab)});
   },
   refreshAll(){
@@ -56,6 +61,7 @@ window.UI = {
     const h=Math.floor(s.minutes/60),m=Math.floor(s.minutes%60);document.getElementById('timeValue').textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;document.getElementById('dayValue').textContent=this.t('day',{n:s.day});
     document.getElementById('citySubtitle').textContent=`${I18N.stage(stage.name)} · ${this.t('day',{n:s.day})}`; document.getElementById('stageBadge').textContent=I18N.stage(stage.name);
     const dk=document.getElementById('decisionKind'); if(dk) dk.textContent=this.t('policyDecision'); document.getElementById('pauseBtn').textContent=s.paused?this.t('resume'):this.t('pause'); document.getElementById('speed1Btn').classList.toggle('active',(s.speed||1)===1); document.getElementById('speed2Btn').classList.toggle('active',(s.speed||1)===2); document.getElementById('bulldozeBtn').classList.toggle('active',s.bulldoze); const simStatus=document.getElementById('simStatus'); if(simStatus){simStatus.textContent=s.paused?this.t('pausedStatus'):this.t('liveStatus',{n:s.speed||1});simStatus.classList.toggle('paused',s.paused);simStatus.classList.toggle('live',!s.paused);}
+    const fitBtn=document.getElementById('fitCityBtn');if(fitBtn)fitBtn.textContent=(s.settings?.mapView==='fit'?this.t('normalZoom'):this.t('fitCity'));
     const expandBtn=document.getElementById('expandLandBtn'),offer=MapSystem.expansionOffer(); if(expandBtn){if(!offer){expandBtn.textContent=this.t('landMax');expandBtn.disabled=true;}else{const unlocked=s.population>=offer.minPop;expandBtn.textContent=unlocked?this.t('expandLandCost',{n:offer.target,cost:this.fmt(offer.cost)}):this.t('expandLandLocked',{n:offer.minPop});expandBtn.disabled=!unlocked;expandBtn.title=this.t('expandLandTip',{n:offer.target,cost:this.fmt(offer.cost),pop:offer.minPop.toLocaleString()});}}
     const next=stage.next, progress=next===Infinity?100:((s.population-stage.pop)/(next-stage.pop))*100;
     document.getElementById('stageProgressBar').style.width=Game.clamp(progress)+'%'; document.getElementById('stageProgressText').textContent=next===Infinity?'MAX':`${this.fmt(s.population)} / ${this.fmt(next)}`;
@@ -88,21 +94,21 @@ window.UI = {
     for(const b of BUILDINGS){ if(b.unlock>s.population) items.push({n:b.unlock,name:this.bName(b),priority:1}); }
     const offer=MapSystem.expansionOffer(); if(offer&&offer.minPop>s.population) items.push({n:offer.minPop,name:this.t('landExpansionName'),priority:0});
     for(const p of MEGA_PROJECTS){ if(p.minPop>s.population&&!s.projects.includes(p.id)) items.push({n:p.minPop,name:this.pName(p),priority:2}); }
-    for(const d of DECISIONS){ if(d.minPop>s.population) items.push({n:d.minPop,name:this.t('mayorPolicyName'),priority:3}); }
+    for(const d of DECISIONS){ if(d.minPop>s.population) items.push({n:d.minPop,name:this.t('mayorPolicyUnlock',{name:I18N.item('decisions',d.id,'title',d.title)}),priority:3}); }
     if(!items.length) return this.t('allPopUnlocks');
     items.sort((a,b)=>a.n-b.n||a.priority-b.priority||a.name.localeCompare(b.name));
     const first=items[0];
-    const same=items.filter(x=>x.n===first.n&&x.name!==first.name).slice(0,1);
-    const name=same.length?`${first.name} + ${same[0].name}`:first.name;
+    const same=items.filter(x=>x.n===first.n).filter((x,i,a)=>a.findIndex(y=>y.name===x.name)===i).slice(0,3);
+    const name=same.map(x=>x.name).join(' + ');
     return this.t('atPopulation',{name,n:first.n.toLocaleString(I18N.lang()==='tr'?'tr-TR':'en-US')});
   },
   statInsight(key){
     const s=Game.state,r=Sim.rates(s), tr=I18N.lang()==='tr';
     const density=s.population/Math.max(1,r.popCap);
     const placed=(id)=>s.map.filter(x=>x===id).length;
-    const industrial=placed('workshop')+placed('factory')+placed('advanced');
+    const industrial=placed('workshop')+placed('factory')+placed('advanced')+placed('recycling');
     const green=placed('park')+placed('garden');
-    const civic=placed('clinic')+placed('police')+placed('library');
+    const civic=placed('clinic')+placed('police')+placed('library')+placed('school')+placed('firestation');
     const trend=(v)=>v>0.003?(tr?'Yükseliyor':'Rising'):v<-.003?(tr?'Düşüyor':'Falling'):(tr?'Dengede':'Stable');
     if(key==='happiness'){
       let delta=(s.stats.traffic>70?-.006:0)+(s.stats.pollution>65?-.006:0)+(s.money<0?-.012:0);
@@ -114,8 +120,8 @@ window.UI = {
       return `${trend(delta)} · ${tr?'Doluluk':'Capacity use'} ${Math.round(density*100)}%. ${tr?'Yoğunluk ve binaların trafik etkisi baskı oluşturur; yollar ve bazı projeler azaltır.':'Density and building traffic effects create pressure; roads and some projects reduce it.'}`;
     }
     if(key==='pollution') return `${trend(-.003)} · ${tr?`${industrial} sanayi, ${green} yeşil alan.`:`${industrial} industry, ${green} green spaces.`} ${tr?'Yeni sanayi anlık kirlilik ekler; yeşil yapılar ve eventler dengeleyebilir.':'New industry adds pollution on placement; green buildings and events can offset it.'}`;
-    if(key==='culture') return `${tr?'Kültür':'Culture'} ${Math.round(s.stats.culture)} · ${tr?`${placed('library')} kütüphane, ${placed('garden')} botanik bahçesi.`:`${placed('library')} libraries, ${placed('garden')} botanical gardens.`} ${tr?'Kararlar, eventler ve projeler de etkiler.':'Decisions, events and projects also affect it.'}`;
-    if(key==='safety') return `${tr?'Güvenlik':'Safety'} ${Math.round(s.stats.safety)} · ${tr?`${placed('police')} polis merkezi, ${placed('clinic')} klinik.`:`${placed('police')} police stations, ${placed('clinic')} clinics.`} ${tr?'Suç eventleri ve kararlar değeri değiştirebilir.':'Crime events and decisions can change it.'}`;
+    if(key==='culture') return `${tr?'Kültür':'Culture'} ${Math.round(s.stats.culture)} · ${tr?`${placed('library')} kütüphane, ${placed('school')} okul, ${placed('garden')} botanik bahçesi.`:`${placed('library')} libraries, ${placed('school')} schools, ${placed('garden')} botanical gardens.`} ${tr?'Kararlar, eventler ve projeler de etkiler.':'Decisions, events and projects also affect it.'}`;
+    if(key==='safety') return `${tr?'Güvenlik':'Safety'} ${Math.round(s.stats.safety)} · ${tr?`${placed('police')} polis merkezi, ${placed('firestation')} itfaiye, ${placed('clinic')} klinik.`:`${placed('police')} police stations, ${placed('firestation')} fire stations, ${placed('clinic')} clinics.`} ${tr?'Suç eventleri ve kararlar değeri değiştirebilir.':'Crime events and decisions can change it.'}`;
     return `${tr?'İtibar':'Reputation'} ${Math.round(s.stats.reputation)} · ${tr?'Traitler, büyük eventler, kültür ve mega projeler şehrin dışarıdaki imajını şekillendirir.':'Traits, major events, culture and mega projects shape how the city is seen.'}`;
   },
   buildingEffects(b){
@@ -123,8 +129,8 @@ window.UI = {
     if(b.pop)bits.push(`${tr?'Kapasite':'Cap'} +${b.pop}`);
     if(b.income)bits.push(`+$${b.income}/s`);
     if(b.upkeep)bits.push(`${tr?'Gider':'Upkeep'} -$${b.upkeep}/s`);
-    const labels={happy:tr?'Mutl.':'Happy',traffic:tr?'Trafik':'Traffic',pollution:tr?'Kirl.':'Poll.',culture:tr?'Kültür':'Culture',safety:tr?'Güven.':'Safety'};
-    for(const k of ['happy','traffic','pollution','culture','safety']) if(b[k]) bits.push(`${labels[k]} ${b[k]>0?'+':''}${b[k]}`);
+    const labels={happy:tr?'Mutl.':'Happy',traffic:tr?'Trafik':'Traffic',pollution:tr?'Kirl.':'Poll.',culture:tr?'Kültür':'Culture',safety:tr?'Güven.':'Safety',reputation:tr?'İtibar':'Rep.'};
+    for(const k of ['happy','traffic','pollution','culture','safety','reputation']) if(b[k]) bits.push(`${labels[k]} ${b[k]>0?'+':''}${b[k]}`);
     return bits.join(' · ') || (tr?'Doğrudan stat etkisi yok':'No direct stat effect');
   },
   renderStats(){
@@ -149,14 +155,20 @@ window.UI = {
     document.getElementById('buildList').innerHTML=list.map(b=>{const locked=s.population<b.unlock,selected=s.selectedBuild===b.id&&!s.bulldoze;const name=this.bName(b),desc=this.bDesc(b);return `<button class="build-card ${locked?'locked':''} ${selected?'selected':''}" data-id="${b.id}" title="${this.buildingEffects(b)}"><span class="build-mini"><img class="static-build-icon" src="assets/build-icons/${b.id}.svg" alt="" draggable="false"></span><span class="build-copy"><b>${name}</b><small>${desc}</small><span class="build-meta">$${b.cost.toLocaleString()} · ${b.income?`+$${b.income}/s`:this.t('utility')}</span><span class="build-effects">${this.buildingEffects(b)}</span>${locked?`<span class="lock-chip">${this.t('locked')} · ${b.unlock.toLocaleString()} ${this.t('pop')}</span>`:''}</span></button>`}).join('');
     document.querySelectorAll('.build-card').forEach(el=>el.onclick=()=>{const b=BUILDINGS.find(x=>x.id===el.dataset.id);if(Game.state.population<b.unlock)return this.toast(this.t('locked'),this.t('requires',{n:b.unlock.toLocaleString()}),'bad');Game.state.selectedBuild=b.id;Game.state.bulldoze=false;this.renderBuild(true);document.getElementById('mapStatus').textContent=this.t('placing',{name:this.bName(b)});});
   },
+  nextDecisionMilestone(s=Game.state){
+    const handled=new Set([...(s.decisionHistory||[]),...(s.decisionGrandfathered||[])]);
+    if(s.currentDecision)handled.add(s.currentDecision);
+    for(const id of s.decisionUnlockQueue||[])handled.add(id);
+    return DECISIONS.filter(d=>!handled.has(d.id)&&d.minPop>s.population).sort((a,b)=>a.minPop-b.minPop)[0]||null;
+  },
   renderDecision(){
-    const s=Game.state,root=document.getElementById('decisionCard'); if(!s.currentDecision){root.className='decision-card empty-card';root.innerHTML=`<div class="empty-pixel skyline"></div><h3>${this.t('noDecision')}</h3><p>${this.t('noDecisionText')}</p>`;document.getElementById('decisionTimer').textContent=this.t('nextBrief');return}
+    const s=Game.state,root=document.getElementById('decisionCard'); if(!s.currentDecision){root.className='decision-card empty-card';root.innerHTML=`<div class="empty-pixel skyline"></div><h3>${this.t('noDecision')}</h3><p>${this.t('noDecisionText')}</p>`;const next=this.nextDecisionMilestone(s);document.getElementById('decisionTimer').textContent=next?this.t('nextPolicyAt',{n:next.minPop.toLocaleString(I18N.lang()==='tr'?'tr-TR':'en-US')}):this.t('allPoliciesHandled');return}
     const d=DECISIONS.find(x=>x.id===s.currentDecision); if(!d){s.currentDecision=null;return}
     const title=I18N.item('decisions',d.id,'title',d.title),text=I18N.item('decisions',d.id,'text',d.text);
     root.className='decision-card';root.innerHTML=`<div><span class="eyebrow">${this.t('cityHallBrief')}</span><h3>${title}</h3><p>${text}</p></div><div class="choice-grid">${d.choices.map((c,i)=>`<button class="choice-btn" data-i="${i}"><b>${I18N.choice(d.id,i,c.label)}</b><small>${this.effectsText(c.effects)}</small></button>`).join('')}</div>`;
     root.querySelectorAll('.choice-btn').forEach(b=>b.onclick=()=>this.chooseDecision(d,+b.dataset.i));document.getElementById('decisionTimer').textContent=this.t('decisionRequired');
   },
-  chooseDecision(d,i){const c=d.choices[i],s=Game.state;Sim.applyEffects(s,c.effects,true);if(c.timed)s.modifiers.push({...c.timed});if(d.id==='nightlife'&&i===0)s.flags.nightlife=true;if(d.id==='company'&&i===0)s.flags.corporate=true;const clabel=I18N.choice(d.id,i,c.label);this.addNews({type:'decision_news',decisionId:d.id,choice:i});this.addHistory({type:'decision_history',decisionId:d.id,choice:i});s.recentDecisions=Array.isArray(s.recentDecisions)?s.recentDecisions:[];s.recentDecisions.push(d.id);s.recentDecisions=s.recentDecisions.slice(-6);s.currentDecision=null;this.toast(this.t('decisionMade')||'Decision made',clabel,'good');this.refreshAll()},
+  chooseDecision(d,i){const c=d.choices[i],s=Game.state;Sim.applyEffects(s,c.effects,true);if(c.timed)s.modifiers.push({...c.timed});if(d.id==='nightlife'&&i===0)s.flags.nightlife=true;if(d.id==='company'&&i===0)s.flags.corporate=true;const clabel=I18N.choice(d.id,i,c.label);this.addNews({type:'decision_news',decisionId:d.id,choice:i});this.addHistory({type:'decision_history',decisionId:d.id,choice:i});s.recentDecisions=Array.isArray(s.recentDecisions)?s.recentDecisions:[];s.recentDecisions.push(d.id);s.recentDecisions=s.recentDecisions.slice(-6);s.decisionHistory=Array.isArray(s.decisionHistory)?s.decisionHistory:[];if(!s.decisionHistory.includes(d.id))s.decisionHistory.push(d.id);s.currentDecision=null;this.toast(this.t('decisionMade')||'Decision made',clabel,'good');this.refreshAll()},
   effectsText(e){const labels={money:this.t('budget'),population:this.t('pop'),happiness:this.t('happiness'),traffic:this.t('traffic'),pollution:this.t('pollution'),culture:this.t('culture'),safety:this.t('safety'),reputation:this.t('reputation')};return Object.entries(e).map(([k,v])=>`${v>0?'+':''}${v} ${labels[k]||k}`).join(' · ')},
   renderTab(){
     const s=Game.state,root=document.getElementById('tabContent');
@@ -220,7 +232,7 @@ window.UI = {
     document.getElementById('confirmExpansion').onclick=()=>{document.getElementById('modalRoot').classList.add('hidden');MapSystem.purchaseExpansion();};
   },
   openSettings(){
-    this.modal(`<div class="section-title-row"><h2>${this.t('settingsSave')}</h2><button class="pixel-btn compact" data-close>${this.t('close')}</button></div><label class="field-label">${this.t('cityName')}<input id="cityNameInput" value="${Game.state.cityName}"></label><label class="language-row"><span>${this.t('language')}</span><select id="languageSelect"><option value="en" ${I18N.lang()==='en'?'selected':''}>${this.t('english')}</option><option value="tr" ${I18N.lang()==='tr'?'selected':''}>${this.t('turkish')}</option></select></label><div class="settings-actions"><button id="renameCity" class="pixel-btn">${this.t('rename')}</button><button id="exportSave" class="pixel-btn">${this.t('exportJson')}</button><label class="pixel-btn file-label">${this.t('importJson')}<input id="importSave" type="file" accept="application/json"></label><button id="newGame" class="pixel-btn danger">${this.t('newGame')}</button></div><p class="muted settings-note">${this.t('autosave')}</p>`);
+    this.modal(`<div class="section-title-row"><h2>${this.t('settingsSave')}</h2><button class="pixel-btn compact" data-close>${this.t('close')}</button></div><label class="field-label">${this.t('cityName')}<input id="cityNameInput" value="${Game.state.cityName}"></label><label class="language-row"><span>${this.t('language')}</span><select id="languageSelect"><option value="en" ${I18N.lang()==='en'?'selected':''}>${this.t('english')}</option><option value="tr" ${I18N.lang()==='tr'?'selected':''}>${this.t('turkish')}</option></select></label><div class="settings-actions"><button id="renameCity" class="pixel-btn">${this.t('rename')}</button><button id="exportSave" class="pixel-btn">${this.t('exportJson')}</button><label class="pixel-btn file-label">${this.t('importJson')}<input id="importSave" type="file" accept="application/json"></label><button id="newGame" class="pixel-btn danger">${this.t('newGame')}</button></div><p class="muted settings-note">${this.t('autosave')} · ${this.t('versionLabel')} ${Game.APP_VERSION}</p>`);
     document.getElementById('languageSelect').onchange=e=>{Game.state.settings.language=e.target.value;localStorage.setItem('cityInATabLang',e.target.value);StorageSystem.save(Game.state);this._buildKey='';this.applyStaticLanguage();this.refreshAll();MapSystem.render();this.openSettings()};
     document.getElementById('renameCity').onclick=()=>{const v=document.getElementById('cityNameInput').value.trim().slice(0,28);if(v){Game.state.cityName=v;document.getElementById('cityNameLabel').textContent=v;StorageSystem.save(Game.state);this.toast(this.t('cityRenamed'),v,'good')}};
     document.getElementById('exportSave').onclick=()=>StorageSystem.export(Game.state);

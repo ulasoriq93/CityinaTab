@@ -222,3 +222,25 @@ body{font-size:13px}
 .growth-metric::after{content:attr(data-growth-tip);white-space:pre-line;position:absolute;z-index:80;left:50%;top:calc(100% + 7px);transform:translate(-50%,-3px);width:300px;max-width:min(300px,calc(100vw - 24px));padding:9px 10px;background:#0c1320;border:1px solid #52617b;box-shadow:3px 3px 0 #070a10;color:#cbd7e5;font-size:10px;line-height:1.5;text-align:left;opacity:0;pointer-events:none;transition:opacity .1s,transform .1s}
 .growth-metric:hover::after,.growth-metric:focus::after{opacity:1;transform:translate(-50%,0)}
 @media(max-width:800px){.growth-metric::after{position:fixed;left:12px;right:12px;top:auto;bottom:12px;transform:translateY(3px);width:auto;max-width:none}.growth-metric:hover::after,.growth-metric:focus::after{transform:none}}
+
+
+/* V1.5 map usability */
+.version-badge{display:inline-block;vertical-align:middle;margin-left:5px;padding:2px 5px;font-size:9px;letter-spacing:.06em;color:#a9bdd6;background:#101827;border:1px solid #3d4d68}
+.city-map{overscroll-behavior:contain;scrollbar-gutter:stable;touch-action:pan-x pan-y}
+.city-map.fit-view{overflow:hidden;justify-content:center;align-content:center;padding:12px;max-height:none}
+.city-map.fit-view .tile{cursor:pointer}
+@media(max-width:900px){.map-actions{flex-wrap:wrap}.map-actions .pixel-btn{white-space:nowrap}}
+
+/* V1.5 map sprites for new build types */
+.tile-art.school:before{content:"";position:absolute;left:5px;right:5px;bottom:5px;height:24px;background:#c6905c;box-shadow:inset 0 -5px #8f613f}
+.tile-art.school:after{content:"";position:absolute;left:8px;right:8px;top:7px;height:7px;background:#6f4a3a;box-shadow:0 11px 0 -2px #9dd3e8}
+.tile-art.recycling:before{content:"";position:absolute;left:5px;right:5px;bottom:5px;height:23px;background:#5f7e68;box-shadow:inset 0 -5px #405947}
+.tile-art.recycling:after{content:"↻";position:absolute;left:11px;top:7px;color:#bfe2a3;font:bold 18px sans-serif}
+.tile-art.cinema:before{content:"";position:absolute;left:4px;right:4px;bottom:5px;height:27px;background:#7e557d;box-shadow:inset 0 -5px #583957}
+.tile-art.cinema:after{content:"";position:absolute;left:8px;right:8px;top:9px;height:8px;background:#e0b95f;box-shadow:0 12px 0 -2px #9ed7ea}
+.tile-art.firestation:before{content:"";position:absolute;left:5px;right:5px;bottom:5px;height:26px;background:#b75b52;box-shadow:inset 0 -5px #803e39}
+.tile-art.firestation:after{content:"";position:absolute;left:11px;top:8px;width:18px;height:18px;background:#e8d8bd;clip-path:polygon(50% 0,80% 45%,63% 45%,78% 100%,50% 64%,26% 100%,37% 45%,20% 45%)}
+.tile-art.transitHub:before{content:"";position:absolute;left:4px;right:4px;bottom:5px;height:24px;background:#557b91;box-shadow:inset 0 -5px #385768}
+.tile-art.transitHub:after{content:"";position:absolute;left:8px;right:8px;top:9px;height:6px;background:#acd9ea;box-shadow:0 10px 0 #acd9ea}
+.tile-art.hotel:before{content:"";position:absolute;left:8px;right:8px;bottom:4px;height:35px;background:#8d6d57;box-shadow:inset 0 -5px #644b3d}
+.tile-art.hotel:after{content:"H";position:absolute;left:14px;top:6px;color:#f1d787;font:bold 16px monospace}

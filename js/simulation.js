@@ -182,34 +182,25 @@ window.Sim = {
 
   maybeDecision(s){
     s.recentDecisions=Array.isArray(s.recentDecisions)?s.recentDecisions:[];
-    s.decisionUnlocksSeen=Array.isArray(s.decisionUnlocksSeen)?s.decisionUnlocksSeen:[];
     s.decisionUnlockQueue=Array.isArray(s.decisionUnlockQueue)?s.decisionUnlockQueue:[];
+    s.decisionHistory=Array.isArray(s.decisionHistory)?s.decisionHistory:[...s.recentDecisions];
 
-    // V1.3.3: population-based Mayor's Desk unlocks are now literal.
-    // When Next Unlock says a policy opens at N population, crossing N queues that
-    // exact policy immediately instead of waiting for the normal briefing timer.
-    const newlyUnlocked=DECISIONS
-      .filter(d=>s.population>=d.minPop&&!s.decisionUnlocksSeen.includes(d.id))
-      .sort((a,b)=>a.minPop-b.minPop);
-    for(const d of newlyUnlocked){
-      s.decisionUnlocksSeen.push(d.id);
-      if(!s.decisionUnlockQueue.includes(d.id))s.decisionUnlockQueue.push(d.id);
-    }
+    // V1.5 self-healing milestone queue: an eligible policy can never be lost just
+    // because an older save marked it as seen before it was actually presented.
+    // Decisions already completed, currently open, queued, or intentionally
+    // grandfathered by migration are excluded.
+    const completed=new Set([...(s.decisionHistory||[]),...(s.decisionGrandfathered||[])]);
+    const queued=new Set(s.decisionUnlockQueue);
+    if(s.currentDecision)completed.add(s.currentDecision);
+    const eligible=DECISIONS.filter(d=>s.population>=d.minPop&&!completed.has(d.id)&&!queued.has(d.id)).sort((a,b)=>a.minPop-b.minPop);
+    for(const d of eligible){s.decisionUnlockQueue.push(d.id);queued.add(d.id);}
 
     if(s.currentDecision)return;
-
-    // Newly unlocked policies take priority and bypass the regular cooldown.
     while(s.decisionUnlockQueue.length){
-      const id=s.decisionUnlockQueue.shift();
-      const d=DECISIONS.find(x=>x.id===id);
-      if(!d||s.population<d.minPop)continue;
-      s.currentDecision=id;
-      UI.renderDecision();
-      return;
+      const id=s.decisionUnlockQueue.shift(),d=DECISIONS.find(x=>x.id===id);
+      if(!d||s.population<d.minPop||completed.has(id))continue;
+      s.currentDecision=id;UI.renderDecision();return;
     }
-
-    // V1.4: no timer-based repeat briefings. After the opening decision,
-    // Mayor's Desk appears only when a new population milestone is crossed.
   },
   checkTraits(s){ for(const t of TRAITS){if(!s.traits.includes(t.id)&&t.condition(s)){s.traits.push(t.id); const tn=UI.trName(t); UI.toast(I18N.lang()==='tr'?'Şehir özelliği açıldı':'Trait unlocked',tn,'good'); UI.addHistory({type:'trait_history',traitId:t.id}); UI.addNews({type:'trait_news',traitId:t.id});}}},
   checkAchievements(s){ for(const a of ACHIEVEMENTS){if(!s.achievements.includes(a.id)&&a.test(s)){s.achievements.push(a.id); UI.toast(I18N.lang()==='tr'?'Başarı açıldı':'Achievement unlocked',UI.aName(a),'good');}}}

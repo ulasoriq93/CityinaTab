@@ -1,4 +1,4 @@
-# City in a Tab — V1.4
+# City in a Tab — V1.5
 
 A fully client-side pixel-art idle city builder for GitHub Pages.
 
@@ -57,7 +57,7 @@ Upload the project contents to a repository and enable GitHub Pages for the bran
 - Mayor's Desk timing/progression was not changed in this update.
 
 
-## V1.4
+## V1.5
 - Mayor's Desk is now fully population-driven: the opening policy appears immediately, then future briefings only appear when their population milestone is crossed.
 - Removed the legacy timer-based Mayor's Desk repeat system, so a policy can no longer arrive before the Next Unlock population threshold.
 - New games start with the first Mayor's Desk card immediately; the next early policy milestone is 200 population.
@@ -66,3 +66,12 @@ Upload the project contents to a repository and enable GitHub Pages for the bran
 - Happiness can positively boost migration, while pollution and traffic still slow it down.
 - A healthy city economy now provides a modest migration bonus, giving commercial/industrial growth a direct population-growth benefit.
 - Population Growth hover breakdown now shows stage potential, happiness, pollution, traffic, economy/jobs, traits, capacity pressure and final net growth.
+
+
+## V1.5 highlights
+- Self-healing population-milestone Mayor's Desk queue, including an 8,000-pop housing policy.
+- Six new buildings with static build-menu pixel SVG icons.
+- Fit City / Normal Zoom toggle and PNG city snapshot export.
+- Map scroll chaining contained inside the city viewport.
+- Land expansion extended to 40×40.
+- Visible app version badge.
