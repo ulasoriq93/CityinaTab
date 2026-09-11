@@ -1,3 +1,11 @@
+# City in a Tab — V1.5.1
+
+Hotfix release for V1.5.
+
+- Fit City now scales the complete 42px map grid as one unit, so building sprites keep their proportions instead of being re-laid out at tiny tile sizes.
+- Save City Image now renders road connectivity (straight roads, corners, T-junctions and intersections) from neighboring road tiles instead of exporting the old generic horizontal-road icon.
+- Compatible with V1.5 saves.
+
 # City in a Tab — V1.5
 
 A fully client-side pixel-art idle city builder for GitHub Pages.

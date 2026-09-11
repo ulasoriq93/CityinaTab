@@ -244,3 +244,9 @@ body{font-size:13px}
 .tile-art.transitHub:after{content:"";position:absolute;left:8px;right:8px;top:9px;height:6px;background:#acd9ea;box-shadow:0 10px 0 #acd9ea}
 .tile-art.hotel:before{content:"";position:absolute;left:8px;right:8px;bottom:4px;height:35px;background:#8d6d57;box-shadow:inset 0 -5px #644b3d}
 .tile-art.hotel:after{content:"H";position:absolute;left:14px;top:6px;color:#f1d787;font:bold 16px monospace}
+
+/* V1.5.1 — preserve map sprite geometry in Fit City mode */
+.city-map{display:block}
+.city-grid{display:grid;grid-template-columns:repeat(var(--map-size),var(--tile));grid-template-rows:repeat(var(--map-size),var(--tile));gap:2px;width:max-content;height:max-content;margin:0 auto;position:relative}
+.city-map.fit-view{display:block;overflow:hidden;padding:0;position:relative}
+.city-map.fit-view .city-grid{margin:0}
