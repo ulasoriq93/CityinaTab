@@ -56,33 +56,45 @@ window.Sim = {
     for(const k of this.statKeys) state.stats[k]=Game.clamp((state.baseStats[k]||0)+(bonuses[k]||0));
   },
 
-  growthBreakdown(state,popCap){
-    const base=0.80;
-    const happinessFactor=Game.clamp(state.stats.happiness,0,100)/100;
-    const pollutionFactor=Math.max(0,1-state.stats.pollution/180);
-    const trafficFactor=Math.max(0,1-state.stats.traffic/220);
-    const rawPressure=happinessFactor*pollutionFactor*trafficFactor;
-    const pressureFactor=Math.max(.15,rawPressure);
+  growthBreakdown(state,popCap,netIncome=0){
+    const stage=Game.stageFor(state);
+    const stageBase={
+      'Settlement':0.80,
+      'Town':1.15,
+      'Small City':1.65,
+      'Regional City':2.25,
+      'Metropolis':3.10,
+      'Megacity':4.25
+    }[stage.name]||0.80;
+
+    // V1.4: growth potential now scales with city stage instead of being capped
+    // around the starter 0.8/s forever. Good city management can also push the
+    // result above the stage baseline rather than merely avoiding penalties.
+    const happinessFactor=.85+(Game.clamp(state.stats.happiness,0,100)/200); // 0.85..1.35
+    const pollutionFactor=Math.max(.55,1-state.stats.pollution/250);
+    const trafficFactor=Math.max(.55,1-state.stats.traffic/300);
+    const economyFactor=netIncome>=0
+      ? 1+Math.min(.12,netIncome/400)
+      : Math.max(.70,1+netIncome/80);
     const denseFactor=state.traits.includes('dense')?1.05:1;
     const capacityFactor=state.population>=popCap?-.25:1;
 
-    // Sequential deltas make the multiplier-based formula readable as a simple breakdown.
-    let value=base;
-    const afterHappiness=base*happinessFactor;
+    let value=stageBase;
+    const afterHappiness=value*happinessFactor;
     const happinessImpact=afterHappiness-value; value=afterHappiness;
     const afterPollution=value*pollutionFactor;
     const pollutionImpact=afterPollution-value; value=afterPollution;
     const afterTraffic=value*trafficFactor;
     const trafficImpact=afterTraffic-value; value=afterTraffic;
-    const afterFloor=base*pressureFactor;
-    const floorImpact=afterFloor-value; value=afterFloor;
+    const afterEconomy=value*economyFactor;
+    const economyImpact=afterEconomy-value; value=afterEconomy;
     const afterDense=value*denseFactor;
     const denseImpact=afterDense-value; value=afterDense;
     const afterCapacity=value*capacityFactor;
     const capacityImpact=afterCapacity-value; value=afterCapacity;
 
-    return {base,happinessFactor,pollutionFactor,trafficFactor,rawPressure,pressureFactor,denseFactor,capacityFactor,
-      happinessImpact,pollutionImpact,trafficImpact,floorImpact,denseImpact,capacityImpact,popGrowth:value,popCap};
+    return {base:stageBase,stageName:stage.name,happinessFactor,pollutionFactor,trafficFactor,economyFactor,denseFactor,capacityFactor,
+      happinessImpact,pollutionImpact,trafficImpact,economyImpact,denseImpact,capacityImpact,popGrowth:value,popCap};
   },
 
   rates(state){
@@ -93,8 +105,9 @@ window.Sim = {
     if(state.traits.includes('tourist')) income*=1.06;
     if(state.traits.includes('mega')) upkeep*=.95;
     for(const m of state.modifiers||[]) if(m.incomeMult) income*=m.incomeMult;
-    const growth=this.growthBreakdown(state,popCap);
-    return {income,upkeep,net:income-upkeep,popGrowth:growth.popGrowth,popCap,growth};
+    const net=income-upkeep;
+    const growth=this.growthBreakdown(state,popCap,net);
+    return {income,upkeep,net,popGrowth:growth.popGrowth,popCap,growth};
   },
 
   applyEffects(s,e={},silent=false){
@@ -195,19 +208,8 @@ window.Sim = {
       return;
     }
 
-    if(Date.now()<s.nextDecisionAt)return;
-    const eligible=DECISIONS.filter(d=>s.population>=d.minPop);
-    if(!eligible.length)return;
-    let pool=eligible.filter(d=>!s.recentDecisions.includes(d.id));
-    if(!pool.length){
-      const keep=Math.min(2,s.recentDecisions.length);
-      s.recentDecisions=s.recentDecisions.slice(-keep);
-      pool=eligible.filter(d=>!s.recentDecisions.includes(d.id));
-    }
-    if(!pool.length)pool=eligible.filter(d=>d.id!==s.recentDecisions.at(-1));
-    if(!pool.length)pool=eligible;
-    s.currentDecision=pool[Math.floor(Math.random()*pool.length)].id;
-    UI.renderDecision();
+    // V1.4: no timer-based repeat briefings. After the opening decision,
+    // Mayor's Desk appears only when a new population milestone is crossed.
   },
   checkTraits(s){ for(const t of TRAITS){if(!s.traits.includes(t.id)&&t.condition(s)){s.traits.push(t.id); const tn=UI.trName(t); UI.toast(I18N.lang()==='tr'?'Şehir özelliği açıldı':'Trait unlocked',tn,'good'); UI.addHistory({type:'trait_history',traitId:t.id}); UI.addNews({type:'trait_news',traitId:t.id});}}},
   checkAchievements(s){ for(const a of ACHIEVEMENTS){if(!s.achievements.includes(a.id)&&a.test(s)){s.achievements.push(a.id); UI.toast(I18N.lang()==='tr'?'Başarı açıldı':'Achievement unlocked',UI.aName(a),'good');}}}

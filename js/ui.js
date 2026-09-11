@@ -64,21 +64,22 @@ window.UI = {
     this.renderStats();this.renderBuild(false);this.renderProjects();this.renderTab();this.renderDecision();
   },
   populationGrowthTip(s,r){
-    const g=r.growth||Sim.growthBreakdown(s,r.popCap), tr=I18N.lang()==='tr';
+    const g=r.growth||Sim.growthBreakdown(s,r.popCap,r.net), tr=I18N.lang()==='tr';
     const signed=(v)=>`${v>=0?'+':''}${v.toFixed(2)}/s`;
+    const stageName=I18N.stage(g.stageName||Game.stageFor(s).name);
     const lines=[
       tr?'NÜFUS ARTIŞI':'POPULATION GROWTH',
-      `${tr?'Temel':'Base'}: ${signed(g.base)}`,
+      `${tr?'Aşama potansiyeli':'Stage potential'} (${stageName}): ${signed(g.base)}`,
       `${tr?'Mutluluk':'Happiness'}: ${signed(g.happinessImpact)}`,
       `${tr?'Kirlilik':'Pollution'}: ${signed(g.pollutionImpact)}`,
-      `${tr?'Trafik':'Traffic'}: ${signed(g.trafficImpact)}`
+      `${tr?'Trafik':'Traffic'}: ${signed(g.trafficImpact)}`,
+      `${tr?'Ekonomi / işler':'Economy / jobs'}: ${signed(g.economyImpact)}`
     ];
-    if(g.floorImpact>0.0005) lines.push(`${tr?'Minimum büyüme koruması':'Minimum growth floor'}: ${signed(g.floorImpact)}`);
     if(Math.abs(g.denseImpact)>0.0005) lines.push(`${tr?'Yoğun şehir traiti':'Dense City trait'}: ${signed(g.denseImpact)}`);
     if(Math.abs(g.capacityImpact)>0.0005) lines.push(`${tr?'Kapasite aşımı':'Over capacity'}: ${signed(g.capacityImpact)}`);
     else lines.push(`${tr?'Kapasite':'Capacity'}: ${this.fmt(s.population)} / ${this.fmt(r.popCap)} · ${tr?'ceza yok':'no penalty'}`);
     lines.push(`${tr?'Net':'Net'}: ${signed(r.popGrowth)}`);
-    lines.push(tr?'Not: Konut kapasiteyi artırır; kapasite dolmadıkça tek başına büyüme hızını yükseltmez.':'Note: Housing raises capacity; it does not directly speed growth until capacity becomes a constraint.');
+    lines.push(tr?'Not: Konut kapasite sağlar; güçlü ekonomi ve iyi yaşam koşulları göçü hızlandırır.':'Note: Housing provides capacity; a strong economy and good living conditions accelerate migration.');
     return lines.join('\n');
   },
 
@@ -155,7 +156,7 @@ window.UI = {
     root.className='decision-card';root.innerHTML=`<div><span class="eyebrow">${this.t('cityHallBrief')}</span><h3>${title}</h3><p>${text}</p></div><div class="choice-grid">${d.choices.map((c,i)=>`<button class="choice-btn" data-i="${i}"><b>${I18N.choice(d.id,i,c.label)}</b><small>${this.effectsText(c.effects)}</small></button>`).join('')}</div>`;
     root.querySelectorAll('.choice-btn').forEach(b=>b.onclick=()=>this.chooseDecision(d,+b.dataset.i));document.getElementById('decisionTimer').textContent=this.t('decisionRequired');
   },
-  chooseDecision(d,i){const c=d.choices[i],s=Game.state;Sim.applyEffects(s,c.effects,true);if(c.timed)s.modifiers.push({...c.timed});if(d.id==='nightlife'&&i===0)s.flags.nightlife=true;if(d.id==='company'&&i===0)s.flags.corporate=true;const clabel=I18N.choice(d.id,i,c.label);this.addNews({type:'decision_news',decisionId:d.id,choice:i});this.addHistory({type:'decision_history',decisionId:d.id,choice:i});s.recentDecisions=Array.isArray(s.recentDecisions)?s.recentDecisions:[];s.recentDecisions.push(d.id);s.recentDecisions=s.recentDecisions.slice(-6);s.currentDecision=null;s.nextDecisionAt=Date.now()+65000+Math.random()*65000;this.toast(this.t('decisionMade')||'Decision made',clabel,'good');this.refreshAll()},
+  chooseDecision(d,i){const c=d.choices[i],s=Game.state;Sim.applyEffects(s,c.effects,true);if(c.timed)s.modifiers.push({...c.timed});if(d.id==='nightlife'&&i===0)s.flags.nightlife=true;if(d.id==='company'&&i===0)s.flags.corporate=true;const clabel=I18N.choice(d.id,i,c.label);this.addNews({type:'decision_news',decisionId:d.id,choice:i});this.addHistory({type:'decision_history',decisionId:d.id,choice:i});s.recentDecisions=Array.isArray(s.recentDecisions)?s.recentDecisions:[];s.recentDecisions.push(d.id);s.recentDecisions=s.recentDecisions.slice(-6);s.currentDecision=null;this.toast(this.t('decisionMade')||'Decision made',clabel,'good');this.refreshAll()},
   effectsText(e){const labels={money:this.t('budget'),population:this.t('pop'),happiness:this.t('happiness'),traffic:this.t('traffic'),pollution:this.t('pollution'),culture:this.t('culture'),safety:this.t('safety'),reputation:this.t('reputation')};return Object.entries(e).map(([k,v])=>`${v>0?'+':''}${v} ${labels[k]||k}`).join(' · ')},
   renderTab(){
     const s=Game.state,root=document.getElementById('tabContent');

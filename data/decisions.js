@@ -2,7 +2,7 @@ window.DECISIONS = [
 {id:'parkParking',title:'A Vacant Downtown Lot',text:'Residents want a park. Shop owners want parking.',minPop:150,choices:[
  {label:'Build the park',effects:{money:-600,happiness:6,pollution:-3,culture:1},news:'Council approves a new downtown park.'},
  {label:'Build parking',effects:{money:-350,traffic:-5,happiness:-1,pollution:2},news:'New parking opens beside the shopping street.'}]},
-{id:'transitBudget',title:'The Bus Budget',text:'Transit staff want direction before the next service plan.',minPop:180,choices:[
+{id:'transitBudget',title:'The Bus Budget',text:'Transit staff want direction before the next service plan.',minPop:200,choices:[
  {label:'Increase service',effects:{money:-500,traffic:-3,happiness:2,reputation:1},news:'Bus frequency increases across the growing settlement.'},
  {label:'Hold the line',effects:{money:-100,happiness:1},news:'Transit service stays at its current level.'},
  {label:'Trim service',effects:{money:650,traffic:4,happiness:-3},news:'The city trims bus service to save money.'}]},

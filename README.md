@@ -1,4 +1,4 @@
-# City in a Tab — V1.3
+# City in a Tab — V1.4
 
 A fully client-side pixel-art idle city builder for GitHub Pages.
 
@@ -55,3 +55,14 @@ Upload the project contents to a repository and enable GitHub Pages for the bran
 - The breakdown shows the exact current impact of happiness, pollution, traffic, density trait and over-capacity pressure on the final growth rate.
 - Housing/capacity behavior is clarified directly in the tooltip: extra capacity prevents the over-capacity penalty but does not by itself increase the base arrival speed.
 - Mayor's Desk timing/progression was not changed in this update.
+
+
+## V1.4
+- Mayor's Desk is now fully population-driven: the opening policy appears immediately, then future briefings only appear when their population milestone is crossed.
+- Removed the legacy timer-based Mayor's Desk repeat system, so a policy can no longer arrive before the Next Unlock population threshold.
+- New games start with the first Mayor's Desk card immediately; the next early policy milestone is 200 population.
+- Existing V1.3.4 saves migrate automatically. Past milestones are marked handled during migration, preventing a backlog of old policies from appearing at once.
+- Population growth now scales by city stage instead of remaining anchored to the original 0.8/s starter rate forever.
+- Happiness can positively boost migration, while pollution and traffic still slow it down.
+- A healthy city economy now provides a modest migration bonus, giving commercial/industrial growth a direct population-growth benefit.
+- Population Growth hover breakdown now shows stage potential, happiness, pollution, traffic, economy/jobs, traits, capacity pressure and final net growth.
